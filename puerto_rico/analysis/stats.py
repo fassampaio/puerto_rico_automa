@@ -56,15 +56,16 @@ class TournamentSummary:
         if not self.games:
             return "Nenhuma partida."
         avg_rounds = self.rounds_sum / self.games
+        w = max(12, *(len(name) for name in self.agents))
         lines = [
             f"{self.games} partidas · {self.num_players} jogadores · {avg_rounds:.1f} rodadas",
             "",
-            f"{'Agente':<32} {'Partic.':>8} {'Vitórias':>9} {'Taxa':>7} {'Pontos':>7} {'Posição':>8}",
+            f"{'Agente':<{w}} {'Partic.':>8} {'Vitórias':>9} {'Taxa':>7} {'Pontos':>7} {'Posição':>8}",
         ]
         ordered = sorted(self.agents.items(), key=lambda kv: kv[1].win_rate, reverse=True)
         for name, st in ordered:
             lines.append(
-                f"{name:<32} {st.games:>8} {st.wins:>9.1f} {st.win_rate:>6.1%} "
+                f"{name:<{w}} {st.games:>8} {st.wins:>9.1f} {st.win_rate:>6.1%} "
                 f"{st.avg_score:>7.1f} {st.avg_rank:>8.2f}"
             )
         lines.append("")

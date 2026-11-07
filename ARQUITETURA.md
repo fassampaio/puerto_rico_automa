@@ -92,7 +92,13 @@ class Agent(Protocol):
 
 1. Motor + testes ✅ (46 testes; ~90 partidas aleatórias/s com 4 jogadores — `scripts/bench.py`)
 2. Runner, logs, torneio ✅ (`python -m puerto_rico tournament` / `show`; mãos com rotação de assentos; resultado idêntico com qualquer nº de processos)
-3. Bot heurístico com perfis
+3. Bot heurístico com perfis ✅ — `agents/heuristic.py`, `evaluation.py`, `mayor.py`, `profiles.py`
+   - Avalia cada jogada pelo estado resultante (pontos finais estimados, relativos aos adversários).
+   - Papéis: simula a fase inteira com todos jogando pela mesma heurística (níveis médio/difícil).
+   - Prefeito: planejador de alocação com pares plantação+prédio (difícil).
+   - Calibração (4 jogadores, 120 partidas): difícil 56% · médio 29% · fácil 15% · aleatório 0%.
+     Estilos no difícil: exportador 38% · construtor 22% · equilibrado 22% · comerciante 18%.
+   - Observação: com esses bots, os assentos 3 e 4 (começam com milho) vencem mais.
 4. CLI para jogar
 5. MCTS + níveis + calibração por rating
 6. Relatórios de análise

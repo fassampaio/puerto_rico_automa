@@ -13,7 +13,7 @@ Simulador do jogo de tabuleiro **Puerto Rico** (jogo base, 3 a 5 jogadores) com 
 |---|---|
 | 1. Motor de regras + testes | ✅ |
 | 2. Runner, registro de partidas, torneios | ✅ |
-| 3. Bot heurístico com perfis de estilo | ⏳ |
+| 3. Bot heurístico com perfis de estilo | ✅ |
 | 4. Interface de terminal para jogar | ⏳ |
 | 5. Bot MCTS com níveis de dificuldade | ⏳ |
 | 6. Relatórios de análise | ⏳ |
@@ -40,6 +40,18 @@ python -m pytest
 Torneio entre agentes (registra cada partida em JSONL e mostra um resumo):
 ```bash
 python -m puerto_rico tournament --agents random random random random --games 1000 --workers 4 --out logs/torneio.jsonl
+```
+
+Agentes disponíveis (especificação `nome:param=valor,...`):
+
+| Especificação | Descrição |
+|---|---|
+| `random` | joga ao acaso |
+| `heuristic` | bot heurístico (padrão: `profile=equilibrado`, `level=medio`) |
+| `heuristic:profile=exportador,level=dificil` | estilos: `equilibrado`, `exportador`, `construtor`, `comerciante` · níveis: `facil`, `medio`, `dificil` |
+
+```bash
+python -m puerto_rico tournament -a heuristic:level=dificil heuristic:level=medio heuristic:level=facil random -g 120 -w 2
 ```
 
 Narrar uma partida registrada (na tela, ou num arquivo de texto com `-o`):

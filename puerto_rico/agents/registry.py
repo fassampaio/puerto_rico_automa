@@ -10,12 +10,14 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from .base import Agent
+from .heuristic import HeuristicAgent
 from .random_agent import RandomAgent
 
 AgentFactory = Callable[..., Agent]
 
 AGENTS: dict[str, AgentFactory] = {
     "random": RandomAgent,
+    "heuristic": HeuristicAgent,  # heuristic:profile=exportador,level=dificil
 }
 
 
