@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+logs/
+*.egg-info/
+
+# Material de referência de terceiros (sem licença) — fica só na pasta local
+*.xls
