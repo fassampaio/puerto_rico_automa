@@ -30,7 +30,7 @@ def player_summary(s: GameState, p: int) -> dict:
         "goods": sum(s.goods[p]),
         "tiebreak": tiebreak(s, p),
         "colonists": s.total_colonists(p),
-        "plantations": list(s.island[p]),  # milho, anil, acucar, tabaco, cafe, pedreira
+        "plantations": list(s.island[p]),  # corn, indigo, sugar, tobacco, coffee, quarry
         "buildings": [b.name for b in Building if s.city[p][b]],
     }
 

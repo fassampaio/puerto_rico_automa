@@ -18,8 +18,9 @@ NUM_GOODS = 5
 QUARRY = 5  # índice extra da pedreira nas contagens da ilha
 NUM_TILE_TYPES = 6  # 5 plantações + pedreira
 
-GOOD_NAMES = ("milho", "anil", "açúcar", "tabaco", "café")
-TILE_NAMES = GOOD_NAMES + ("pedreira",)
+# termos do jogo em inglês, como os prédios
+GOOD_NAMES = ("corn", "indigo", "sugar", "tobacco", "coffee")
+TILE_NAMES = GOOD_NAMES + ("quarry",)
 
 GOOD_PRICE = (0, 1, 2, 3, 4)
 GOOD_SUPPLY = (10, 11, 11, 9, 9)

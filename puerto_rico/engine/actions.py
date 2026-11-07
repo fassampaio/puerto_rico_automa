@@ -63,7 +63,7 @@ def describe(a: Action) -> str:
     if k == ActionKind.SETTLE:
         return f"Pegar plantação de {GOOD_NAMES[a.a]}"
     if k == ActionKind.QUARRY:
-        return "Pegar pedreira"
+        return "Pegar quarry"
     if k == ActionKind.PLACE:
         return f"Colocar colono em {place_target_name(a.a)}"
     if k == ActionKind.BUILD:
