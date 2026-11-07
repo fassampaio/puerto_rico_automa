@@ -48,14 +48,14 @@ class Role(IntEnum):
 
 NUM_ROLES = 8
 ROLE_NAMES = (
-    "Colono",
-    "Prefeito",
-    "Construtor",
-    "Artesão",
-    "Comerciante",
-    "Capitão",
-    "Garimpeiro",
-    "Garimpeiro 2",
+    "Settler",
+    "Mayor",
+    "Builder",
+    "Craftsman",
+    "Trader",
+    "Captain",
+    "Prospector",
+    "Prospector 2",
 )
 
 

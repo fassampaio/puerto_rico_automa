@@ -53,34 +53,35 @@ def _cmd_show(args: argparse.Namespace) -> int:
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", encoding="ascii", newline="\n") as f, redirect_stdout(f):
             _show(args)
-        print(f"Narracao gravada em {path}")
+        print(f"Narration saved to {path}")
         return 0
     _show(args)
     return 0
 
 
 def _show(args: argparse.Namespace) -> None:
+    """Narração da partida em inglês (termos do jogo)."""
     record = find_record(args.file, args.game)
     names = record["agents"]
     s = new_game(record["num_players"], record["seed"])
-    out(f"Partida {record['game']} | semente {record['seed']} | {record['num_players']} jogadores")
+    out(f"Game {record['game']} | seed {record['seed']} | {record['num_players']} players")
     for p, name in enumerate(names):
-        out(f"  J{p + 1}: {name}")
+        out(f"  P{p + 1}: {name}")
     last_round = -1
     for action in record_actions(record):
         if s.round != last_round:
             last_round = s.round
-            out(f"\n=== Rodada {s.round + 1} (governador J{s.governor + 1}) ===")
+            out(f"\n=== Round {s.round + 1} (governor P{s.governor + 1}) ===")
         context = "" if s.phase == Phase.ROLE_SELECTION else f"[{ROLE_NAMES[s.current_role]}] "
-        out(f"  J{s.actor + 1} {context}{describe(action)}")
+        out(f"  P{s.actor + 1} {context}{describe(action)}")
         step(s, action)
-    out("\n=== Resultado ===")
+    out("\n=== Result ===")
     for p in range(s.num_players):
         bd = score_breakdown(s, p)
-        mark = " <- vencedor" if p in record["winners"] else ""
+        mark = " <- winner" if p in record["winners"] else ""
         out(
-            f"  J{p + 1} {names[p]:<20} {bd['total']:>3} pts "
-            f"(fichas {bd['fichas']}, predios {bd['predios']}, bonus {bd['bonus']}){mark}"
+            f"  P{p + 1} {names[p]:<20} {bd['total']:>3} pts "
+            f"(VP chips {bd['fichas']}, buildings {bd['predios']}, bonus {bd['bonus']}){mark}"
         )
 
 

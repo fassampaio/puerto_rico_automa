@@ -106,7 +106,7 @@ def test_cli_tournament_and_show(tmp_path, capsys):
     assert "Vitorias por assento" in capsys.readouterr().out
     assert cli_main(["show", str(out), "--game", "2"]) == 0
     text = capsys.readouterr().out
-    assert "Rodada 1" in text and "Resultado" in text
+    assert "Round 1" in text and "Result" in text
     assert text.isascii()
 
 
@@ -117,7 +117,7 @@ def test_logs_are_ascii_only(tmp_path):
     assert out.read_bytes().isascii()
     assert cli_main(["show", str(out), "--game", "1", "-o", str(narration)]) == 0
     data = narration.read_bytes()
-    assert data.isascii() and b"Rodada 1" in data and b"Escolher" in data
+    assert data.isascii() and b"Round 1" in data and b"Choose" in data
 
 
 def test_to_ascii():
