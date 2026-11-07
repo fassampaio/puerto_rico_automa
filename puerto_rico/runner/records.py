@@ -13,6 +13,7 @@ from pathlib import Path
 
 from ..engine import Action, GameState, ranking, score_breakdown, tiebreak
 from ..engine.data import Building
+from ..text import to_ascii
 from .game import GameResult, replay
 
 RECORD_VERSION = 1
@@ -29,7 +30,7 @@ def player_summary(s: GameState, p: int) -> dict:
         "goods": sum(s.goods[p]),
         "tiebreak": tiebreak(s, p),
         "colonists": s.total_colonists(p),
-        "plantations": list(s.island[p]),  # milho, anil, açúcar, tabaco, café, pedreira
+        "plantations": list(s.island[p]),  # milho, anil, acucar, tabaco, cafe, pedreira
         "buildings": [b.name for b in Building if s.city[p][b]],
     }
 
@@ -74,8 +75,19 @@ def replay_record(record: dict) -> GameState:
     return replay(record["num_players"], record["seed"], record_actions(record))
 
 
+def _ascii_strings(value: object) -> object:
+    if isinstance(value, str):
+        return to_ascii(value)
+    if isinstance(value, list):
+        return [_ascii_strings(v) for v in value]
+    if isinstance(value, dict):
+        return {to_ascii(k): _ascii_strings(v) for k, v in value.items()}
+    return value
+
+
 def dumps(record: dict) -> str:
-    return json.dumps(record, ensure_ascii=False, separators=(",", ":"))
+    """Uma linha JSON só com ASCII (sem acentos nem cedilha)."""
+    return json.dumps(_ascii_strings(record), ensure_ascii=True, separators=(",", ":"))
 
 
 def read_records(path: str | Path) -> Iterator[dict]:

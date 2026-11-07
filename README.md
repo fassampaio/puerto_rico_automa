@@ -42,10 +42,12 @@ Torneio entre agentes (registra cada partida em JSONL e mostra um resumo):
 python -m puerto_rico tournament --agents random random random random --games 1000 --workers 4 --out logs/torneio.jsonl
 ```
 
-Narrar uma partida registrada:
+Narrar uma partida registrada (na tela, ou num arquivo de texto com `-o`):
 ```bash
-python -m puerto_rico show logs/torneio.jsonl --game 0
+python -m puerto_rico show logs/torneio.jsonl --game 0 -o logs/partida0.txt
 ```
+
+Registros e narrações são gravados só em ASCII (sem acentos nem cedilha).
 
 Velocidade do motor:
 ```bash

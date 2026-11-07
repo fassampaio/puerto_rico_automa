@@ -5,11 +5,19 @@ from __future__ import annotations
 import argparse
 import sys
 import time
+from contextlib import redirect_stdout
+from pathlib import Path
 
 from ..engine import Phase, describe, new_game, score_breakdown, step
 from ..engine.data import ROLE_NAMES
 from ..runner.records import find_record, record_actions
 from ..runner.tournament import TournamentConfig, run_tournament
+from ..text import to_ascii
+
+
+def out(text: str = "") -> None:
+    """Toda saída da CLI sai sem acentos/cedilha (pode ser redirecionada para log)."""
+    print(to_ascii(text))
 
 
 def _cmd_tournament(args: argparse.Namespace) -> int:
@@ -32,37 +40,48 @@ def _cmd_tournament(args: argparse.Namespace) -> int:
     summary = run_tournament(cfg, out=args.out, progress=progress)
     elapsed = time.perf_counter() - start
     print(file=sys.stderr)
-    print(summary.format())
-    print(f"\n{cfg.games} partidas em {elapsed:.1f}s ({cfg.games / elapsed:,.0f}/s)")
+    out(summary.format())
+    out(f"\n{cfg.games} partidas em {elapsed:.1f}s ({cfg.games / elapsed:,.0f}/s)")
     if args.out:
-        print(f"Registro: {args.out}")
+        out(f"Registro: {args.out}")
     return 0
 
 
 def _cmd_show(args: argparse.Namespace) -> int:
+    if args.out:
+        path = Path(args.out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="ascii", newline="\n") as f, redirect_stdout(f):
+            _show(args)
+        print(f"Narracao gravada em {path}")
+        return 0
+    _show(args)
+    return 0
+
+
+def _show(args: argparse.Namespace) -> None:
     record = find_record(args.file, args.game)
     names = record["agents"]
     s = new_game(record["num_players"], record["seed"])
-    print(f"Partida {record['game']} · semente {record['seed']} · {record['num_players']} jogadores")
+    out(f"Partida {record['game']} | semente {record['seed']} | {record['num_players']} jogadores")
     for p, name in enumerate(names):
-        print(f"  J{p + 1}: {name}")
+        out(f"  J{p + 1}: {name}")
     last_round = -1
     for action in record_actions(record):
         if s.round != last_round:
             last_round = s.round
-            print(f"\n=== Rodada {s.round + 1} (governador J{s.governor + 1}) ===")
+            out(f"\n=== Rodada {s.round + 1} (governador J{s.governor + 1}) ===")
         context = "" if s.phase == Phase.ROLE_SELECTION else f"[{ROLE_NAMES[s.current_role]}] "
-        print(f"  J{s.actor + 1} {context}{describe(action)}")
+        out(f"  J{s.actor + 1} {context}{describe(action)}")
         step(s, action)
-    print("\n=== Resultado ===")
+    out("\n=== Resultado ===")
     for p in range(s.num_players):
         bd = score_breakdown(s, p)
-        mark = " ← vencedor" if p in record["winners"] else ""
-        print(
+        mark = " <- vencedor" if p in record["winners"] else ""
+        out(
             f"  J{p + 1} {names[p]:<20} {bd['total']:>3} pts "
-            f"(fichas {bd['fichas']}, prédios {bd['predios']}, bônus {bd['bonus']}){mark}"
+            f"(fichas {bd['fichas']}, predios {bd['predios']}, bonus {bd['bonus']}){mark}"
         )
-    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -82,6 +101,7 @@ def build_parser() -> argparse.ArgumentParser:
     sh = sub.add_parser("show", help="narra uma partida registrada")
     sh.add_argument("file")
     sh.add_argument("--game", type=int, default=0)
+    sh.add_argument("--out", "-o", default=None, help="grava a narração num arquivo de texto")
     sh.set_defaults(func=_cmd_show)
     return parser
 

@@ -103,7 +103,24 @@ def test_summary_splits_ties():
 def test_cli_tournament_and_show(tmp_path, capsys):
     out = tmp_path / "t.jsonl"
     assert cli_main(["tournament", "-a", "random", "random", "random", "-g", "3", "-o", str(out)]) == 0
-    assert "Vitórias por assento" in capsys.readouterr().out
+    assert "Vitorias por assento" in capsys.readouterr().out
     assert cli_main(["show", str(out), "--game", "2"]) == 0
     text = capsys.readouterr().out
     assert "Rodada 1" in text and "Resultado" in text
+    assert text.isascii()
+
+
+def test_logs_are_ascii_only(tmp_path):
+    out = tmp_path / "t.jsonl"
+    narration = tmp_path / "partida.txt"
+    cli_main(["tournament", "-a", "random", "random", "random", "-g", "3", "-o", str(out)])
+    assert out.read_bytes().isascii()
+    assert cli_main(["show", str(out), "--game", "1", "-o", str(narration)]) == 0
+    data = narration.read_bytes()
+    assert data.isascii() and b"Rodada 1" in data and b"Escolher" in data
+
+
+def test_to_ascii():
+    from puerto_rico.text import to_ascii
+
+    assert to_ascii("Ação · Açúcar ← Café") == "Acao | Acucar <- Cafe"
