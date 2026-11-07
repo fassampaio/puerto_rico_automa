@@ -42,6 +42,18 @@ class IllegalActionError(ValueError):
     pass
 
 
+# Motivos de fim de jogo (registrados em GameState.end_reasons)
+END_VP = "vp_exhausted"
+END_CITY = "city_full"
+END_COLONISTS = "colonists_exhausted"
+
+
+def _trigger_end(s: GameState, reason: str) -> None:
+    s.end_triggered = True
+    if reason not in s.end_reasons:
+        s.end_reasons.append(reason)
+
+
 # ======================================================================
 # API pública
 # ======================================================================
@@ -483,7 +495,7 @@ def _mayor_end(s: GameState) -> None:
     else:
         s.colonist_ship = s.colonist_supply
         s.colonist_supply = 0
-        s.end_triggered = True
+        _trigger_end(s, END_COLONISTS)
     _finish_role(s)
 
 
@@ -527,7 +539,7 @@ def _do_build(s: GameState, a: Action) -> None:
         if s.is_manned(p, B.UNIVERSITY) and _take_colonist(s):
             s.city_manned[p][b] = 1
         if s.city_used(p) >= CITY_SPACES:
-            s.end_triggered = True
+            _trigger_end(s, END_CITY)
     s.turn += 1
     _builder_next(s)
 
@@ -662,7 +674,7 @@ def _do_ship(s: GameState, a: Action) -> None:
     s.vp[p] += gain
     s.vp_supply -= gain
     if s.vp_supply <= 0:
-        s.end_triggered = True
+        _trigger_end(s, END_VP)
     s.captain_idle = 0
     s.turn += 1
     _captain_next(s)

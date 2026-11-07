@@ -70,6 +70,7 @@ class GameState:
     current_role: int = -1
     turn: int = 0  # deslocamento a partir de role_player na fase atual
     end_triggered: bool = False
+    end_reasons: list[str] = field(default_factory=list)  # ver rules.END_*
     hacienda_done: bool = False
     mayor_last: int = 0
     craft_options: list[int] = field(default_factory=list)
@@ -116,6 +117,7 @@ class GameState:
             current_role=self.current_role,
             turn=self.turn,
             end_triggered=self.end_triggered,
+            end_reasons=self.end_reasons[:],
             hacienda_done=self.hacienda_done,
             mayor_last=self.mayor_last,
             craft_options=self.craft_options[:],

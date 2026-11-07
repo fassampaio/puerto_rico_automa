@@ -91,7 +91,7 @@ class Agent(Protocol):
 ## Roteiro
 
 1. Motor + testes ✅ (46 testes; ~90 partidas aleatórias/s com 4 jogadores — `scripts/bench.py`)
-2. Runner, logs, torneio
+2. Runner, logs, torneio ✅ (`python -m puerto_rico tournament` / `show`; mãos com rotação de assentos; resultado idêntico com qualquer nº de processos)
 3. Bot heurístico com perfis
 4. CLI para jogar
 5. MCTS + níveis + calibração por rating
