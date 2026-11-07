@@ -78,6 +78,10 @@ class GameState:
     captain_privilege_used: bool = False
     wharf_used: list[bool] = field(default_factory=list)
     legal_cache: list | None = None
+    # Event log, off by default: set to [] to record every applied action,
+    # including forced ones, as (round, actor, current_role, action, forced).
+    # Not copied by clone(), so simulations never log.
+    history: list | None = None
 
     def clone(self) -> GameState:
         return GameState(

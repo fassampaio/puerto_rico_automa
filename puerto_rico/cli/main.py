@@ -8,11 +8,13 @@ import time
 from contextlib import redirect_stdout
 from pathlib import Path
 
-from ..engine import Phase, describe, new_game, score_breakdown, step
-from ..engine.data import ROLE_NAMES
+from ..agents.profiles import LEVELS
+from ..engine import new_game, score_breakdown, step
 from ..runner.records import find_record, record_actions
 from ..runner.tournament import TournamentConfig, run_tournament
 from ..text import to_ascii
+from .board import event_line, is_noise
+from .play import default_log_path, play
 
 
 def out(text: str = "") -> None:
@@ -60,21 +62,24 @@ def _cmd_show(args: argparse.Namespace) -> int:
 
 
 def _show(args: argparse.Namespace) -> None:
-    """Narrate a recorded game move by move."""
+    """Narrate a recorded game move by move (forced moves included)."""
     record = find_record(args.file, args.game)
     names = record["agents"]
     s = new_game(record["num_players"], record["seed"])
+    s.history = []
     out(f"Game {record['game']} | seed {record['seed']} | {record['num_players']} players")
     for p, name in enumerate(names):
         out(f"  P{p + 1}: {name}")
-    last_round = -1
     for action in record_actions(record):
-        if s.round != last_round:
-            last_round = s.round
-            out(f"\n=== Round {s.round + 1} (governor P{s.governor + 1}) ===")
-        context = "" if s.phase == Phase.ROLE_SELECTION else f"[{ROLE_NAMES[s.current_role]}] "
-        out(f"  P{s.actor + 1} {context}{describe(action)}")
         step(s, action)
+    last_round = -1
+    for entry in s.history:
+        if is_noise(entry):
+            continue
+        if entry[0] != last_round:
+            last_round = entry[0]
+            out(f"\n=== Round {last_round + 1} (governor P{last_round % s.num_players + 1}) ===")
+        out(event_line(entry))
     out("\n=== Result ===")
     for p in range(s.num_players):
         bd = score_breakdown(s, p)
@@ -85,9 +90,38 @@ def _show(args: argparse.Namespace) -> None:
         )
 
 
+def _cmd_play(args: argparse.Namespace) -> int:
+    log = None if args.no_log else (args.log or default_log_path())
+    seat = None if args.seat is None else args.seat - 1
+    try:
+        play(
+            num_players=args.players,
+            seat=seat,
+            bots=args.bots,
+            level=args.level,
+            seed=args.seed,
+            name=args.name,
+            log_path=log,
+        )
+    except (KeyboardInterrupt, EOFError):
+        out("\nGame abandoned.")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m puerto_rico")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    pl = sub.add_parser("play", help="play a game against bots in the terminal")
+    pl.add_argument("--players", "-p", type=int, choices=(3, 4, 5), default=4)
+    pl.add_argument("--seat", type=int, default=None, help="your seat, 1 = first governor")
+    pl.add_argument("--level", "-l", choices=tuple(LEVELS), default="medium")
+    pl.add_argument("--bots", "-b", nargs="+", default=None, help="bot specs (overrides --level)")
+    pl.add_argument("--seed", type=int, default=None)
+    pl.add_argument("--name", default="You")
+    pl.add_argument("--log", default=None, help="JSONL file to save the game")
+    pl.add_argument("--no-log", action="store_true", help="do not save the game")
+    pl.set_defaults(func=_cmd_play)
 
     t = sub.add_parser("tournament", help="run a tournament between agents")
     t.add_argument("--agents", "-a", nargs="+", required=True, help="e.g. random random random")

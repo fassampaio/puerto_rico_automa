@@ -192,7 +192,7 @@ def _auto(s: GameState) -> None:
         if len(acts) != 1:
             s.legal_cache = acts
             return
-        _do(s, acts[0])
+        _do(s, acts[0], forced=True)
     s.legal_cache = []
 
 
@@ -220,8 +220,10 @@ def _compute_legal(s: GameState) -> list[Action]:
     return []
 
 
-def _do(s: GameState, a: Action) -> None:
+def _do(s: GameState, a: Action, forced: bool = False) -> None:
     s.legal_cache = None
+    if s.history is not None:
+        s.history.append((s.round, s.actor, s.current_role, a, forced))
     ph = s.phase
     if ph == Phase.ROLE_SELECTION:
         _choose_role(s, a.a)

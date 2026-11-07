@@ -69,7 +69,7 @@ Agents are built from text specifications (`agents/registry.py`), e.g. `heuristi
 - `runner/records.py`: JSONL game records (per-player summary + actions), ASCII only.
 - `runner/tournament.py`: controlled seeds, deals with seat rotation, multiprocessing.
 - `analysis/stats.py`: win rates, scores, ranks, wins by seat, game end reasons.
-- `cli/main.py`: `python -m puerto_rico tournament` and `show`.
+- `cli/main.py`: `python -m puerto_rico play`, `tournament` and `show`.
 
 ## Rule interpretation decisions
 
@@ -103,7 +103,9 @@ Agents are built from text specifications (`agents/registry.py`), e.g. `heuristi
    - Calibration (4 players, 120 games): hard 56% · medium 29% · easy 15% · random 0%.
      Styles at hard: shipper 38% · builder 22% · balanced 22% · trader 18%.
    - Note: with these bots, seats 3 and 4 (who start with corn) win more often.
-4. Terminal UI to play
+4. Terminal UI to play ✅ — `python -m puerto_rico play`; `cli/play.py` (HumanCLIAgent + game loop), `cli/board.py` (board rendering)
+   - The engine keeps an optional event history (`GameState.history`), so the player sees every move, forced ones included.
+   - Finished games are saved as JSONL records and can be narrated with `show`.
 5. MCTS + levels + rating calibration
 6. Analysis reports
 7. Optional: EvolverAgent, web, expansions

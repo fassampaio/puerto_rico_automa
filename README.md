@@ -14,7 +14,7 @@ A simulator of the board game **Puerto Rico** (base game, 3 to 5 players) with a
 | 1. Rules engine + tests | ✅ |
 | 2. Runner, game logs, tournaments | ✅ |
 | 3. Heuristic bot with style profiles | ✅ |
-| 4. Terminal UI to play | ⏳ |
+| 4. Terminal UI to play | ✅ |
 | 5. MCTS bot with difficulty levels | ⏳ |
 | 6. Analysis reports | ⏳ |
 
@@ -31,6 +31,17 @@ pip install pytest ruff
 ```
 
 ## Usage
+
+Play against bots in the terminal:
+```bash
+python -m puerto_rico play --players 4 --level hard --name Fabio
+```
+
+Options: `--seat N` (1 = first governor; random by default), `--level easy|medium|hard`,
+`--bots SPEC SPEC ...` to pick the opponents, `--seed N` to replay the same deal, `--no-log`.
+Each finished game is saved to `logs/play-<date>.jsonl` and can be narrated with `show`.
+At any prompt: a number picks that option, `b` shows the full board (with the buildings
+available), `h` shows help, `q` quits.
 
 Tests:
 ```bash
