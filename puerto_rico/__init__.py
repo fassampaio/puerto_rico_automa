@@ -1,1 +1,1 @@
-"""Simulador de Puerto Rico com jogadores automáticos. Ver ARQUITETURA.md."""
+"""Puerto Rico simulator with automated players. See ARCHITECTURE.md."""

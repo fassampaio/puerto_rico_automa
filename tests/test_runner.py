@@ -29,9 +29,9 @@ def test_parse_spec_and_make_agent():
     agent = make_agent("random", seed=3)
     assert isinstance(agent, RandomAgent) and agent.name == "random"
     with pytest.raises(ValueError):
-        make_agent("inexistente", seed=0)
+        make_agent("nonexistent", seed=0)
     with pytest.raises(ValueError):
-        parse_spec("random:semvalor")
+        parse_spec("random:novalue")
 
 
 def test_end_reason_recorded():
@@ -59,7 +59,7 @@ def test_lineup_rotates_seats_with_same_seed():
     lineups = [lineup(cfg, i) for i in range(4)]
     assert len({game_seed(cfg, i) for i in range(4)}) == 1
     assert game_seed(cfg, 4) != game_seed(cfg, 0)
-    for seat in range(4):  # cada agente passa por cada assento
+    for seat in range(4):  # every agent sits in every seat
         assert sorted(lu[seat] for lu in lineups) == ["a", "b", "c", "d"]
 
 
@@ -103,7 +103,7 @@ def test_summary_splits_ties():
 def test_cli_tournament_and_show(tmp_path, capsys):
     out = tmp_path / "t.jsonl"
     assert cli_main(["tournament", "-a", "random", "random", "random", "-g", "3", "-o", str(out)]) == 0
-    assert "Vitorias por assento" in capsys.readouterr().out
+    assert "Wins by seat" in capsys.readouterr().out
     assert cli_main(["show", str(out), "--game", "2"]) == 0
     text = capsys.readouterr().out
     assert "Round 1" in text and "Result" in text
@@ -112,7 +112,7 @@ def test_cli_tournament_and_show(tmp_path, capsys):
 
 def test_logs_are_ascii_only(tmp_path):
     out = tmp_path / "t.jsonl"
-    narration = tmp_path / "partida.txt"
+    narration = tmp_path / "game.txt"
     cli_main(["tournament", "-a", "random", "random", "random", "-g", "3", "-o", str(out)])
     assert out.read_bytes().isascii()
     assert cli_main(["show", str(out), "--game", "1", "-o", str(narration)]) == 0
@@ -123,4 +123,4 @@ def test_logs_are_ascii_only(tmp_path):
 def test_to_ascii():
     from puerto_rico.text import to_ascii
 
-    assert to_ascii("Ação · Açúcar ← Café") == "Acao | Acucar <- Cafe"
+    assert to_ascii("Café · Crème ← Naïve") == "Cafe | Creme <- Naive"

@@ -1,4 +1,4 @@
-"""Ações atômicas do jogo."""
+"""Atomic game actions."""
 
 from __future__ import annotations
 
@@ -11,19 +11,19 @@ from .data import BUILDINGS, GOOD_NAMES, NUM_GOODS, NUM_TILE_TYPES, ROLE_NAMES, 
 class ActionKind(IntEnum):
     CHOOSE_ROLE = 0  # a = Role
     PASS = 1
-    HACIENDA = 2  # pegar plantação extra do monte
-    SETTLE = 3  # a = tipo da plantação visível
+    HACIENDA = 2  # take an extra plantation from the stack
+    SETTLE = 3  # a = face-up plantation type
     QUARRY = 4
-    PLACE = 5  # a = alvo (ver place_target)
+    PLACE = 5  # a = target (see place_target_name)
     BUILD = 6  # a = Building
     CRAFT_BONUS = 7  # a = Good
     SELL = 8  # a = Good
-    SHIP = 9  # a = Good, b = navio (0-2) ou WHARF
-    STORE = 10  # a = máscara de bens nos armazéns, b = bem do barril avulso (-1 = nenhum)
+    SHIP = 9  # a = Good, b = ship (0-2) or WHARF
+    STORE = 10  # a = bitmask of goods kept in warehouses, b = single barrel good (-1 = none)
 
 
 WHARF = 3
-# Alvos do Prefeito: 0-5 = tipos de lote da ilha; 6+ = prédios
+# Mayor targets: 0-5 = island tile types; 6+ = buildings
 PLACE_BUILDING_OFFSET = NUM_TILE_TYPES
 
 
@@ -53,7 +53,7 @@ def place_target_name(code: int) -> str:
 
 
 def describe(a: Action) -> str:
-    """Descrição da ação em inglês (termos do jogo)."""
+    """Human-readable description of an action."""
     k = a.kind
     if k == ActionKind.CHOOSE_ROLE:
         return f"Choose {ROLE_NAMES[a.a]}"

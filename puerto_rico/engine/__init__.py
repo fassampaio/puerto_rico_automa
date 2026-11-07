@@ -1,4 +1,4 @@
-"""Motor de regras de Puerto Rico (jogo base, 3 a 5 jogadores)."""
+"""Puerto Rico rules engine (base game, 3 to 5 players)."""
 
 from .actions import PASS, WHARF, Action, ActionKind, describe
 from .config import RulesConfig

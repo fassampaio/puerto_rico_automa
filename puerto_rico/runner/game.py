@@ -1,4 +1,4 @@
-"""Execução de uma partida entre agentes e reprodução a partir do registro."""
+"""Playing a game between agents and replaying it from a record."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def play_game(agents: Sequence[Agent], seed: int = 0, max_decisions: int = 20_00
         step(s, action)
         actions.append(action)
         if len(actions) > max_decisions:
-            raise RuntimeError("partida excedeu o limite de decisões")
+            raise RuntimeError("game exceeded the decision limit")
     return GameResult(
         seed=seed,
         num_players=n,

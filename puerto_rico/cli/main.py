@@ -1,4 +1,4 @@
-"""Linha de comando: python -m puerto_rico <comando>."""
+"""Command line: python -m puerto_rico <command>."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from ..text import to_ascii
 
 
 def out(text: str = "") -> None:
-    """Toda saída da CLI sai sem acentos/cedilha (pode ser redirecionada para log)."""
+    """All CLI output is plain ASCII (it may be redirected to a log)."""
     print(to_ascii(text))
 
 
@@ -35,15 +35,15 @@ def _cmd_tournament(args: argparse.Namespace) -> int:
 
     def progress(done: int, total: int) -> None:
         if done % step_size == 0 or done == total:
-            print(f"\r  {done}/{total} partidas", end="", file=sys.stderr, flush=True)
+            print(f"\r  {done}/{total} games", end="", file=sys.stderr, flush=True)
 
     summary = run_tournament(cfg, out=args.out, progress=progress)
     elapsed = time.perf_counter() - start
     print(file=sys.stderr)
     out(summary.format())
-    out(f"\n{cfg.games} partidas em {elapsed:.1f}s ({cfg.games / elapsed:,.0f}/s)")
+    out(f"\n{cfg.games} games in {elapsed:.1f}s ({cfg.games / elapsed:,.0f}/s)")
     if args.out:
-        out(f"Registro: {args.out}")
+        out(f"Log: {args.out}")
     return 0
 
 
@@ -60,7 +60,7 @@ def _cmd_show(args: argparse.Namespace) -> int:
 
 
 def _show(args: argparse.Namespace) -> None:
-    """Narração da partida em inglês (termos do jogo)."""
+    """Narrate a recorded game move by move."""
     record = find_record(args.file, args.game)
     names = record["agents"]
     s = new_game(record["num_players"], record["seed"])
@@ -81,7 +81,7 @@ def _show(args: argparse.Namespace) -> None:
         mark = " <- winner" if p in record["winners"] else ""
         out(
             f"  P{p + 1} {names[p]:<20} {bd['total']:>3} pts "
-            f"(VP chips {bd['fichas']}, buildings {bd['predios']}, bonus {bd['bonus']}){mark}"
+            f"(VP chips {bd['chips']}, buildings {bd['buildings']}, bonus {bd['bonus']}){mark}"
         )
 
 
@@ -89,20 +89,20 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m puerto_rico")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    t = sub.add_parser("tournament", help="roda um torneio entre agentes")
-    t.add_argument("--agents", "-a", nargs="+", required=True, help="ex.: random random random")
+    t = sub.add_parser("tournament", help="run a tournament between agents")
+    t.add_argument("--agents", "-a", nargs="+", required=True, help="e.g. random random random")
     t.add_argument("--games", "-g", type=int, default=100)
     t.add_argument("--players", "-p", type=int, choices=(3, 4, 5), default=None)
     t.add_argument("--seed", type=int, default=0)
     t.add_argument("--workers", "-w", type=int, default=1)
-    t.add_argument("--out", "-o", default=None, help="arquivo JSONL para registrar as partidas")
-    t.add_argument("--no-actions", action="store_true", help="não registra as ações (arquivo menor)")
+    t.add_argument("--out", "-o", default=None, help="JSONL file to log the games")
+    t.add_argument("--no-actions", action="store_true", help="do not log actions (smaller file)")
     t.set_defaults(func=_cmd_tournament)
 
-    sh = sub.add_parser("show", help="narra uma partida registrada")
+    sh = sub.add_parser("show", help="narrate a recorded game")
     sh.add_argument("file")
     sh.add_argument("--game", type=int, default=0)
-    sh.add_argument("--out", "-o", default=None, help="grava a narração num arquivo de texto")
+    sh.add_argument("--out", "-o", default=None, help="save the narration to a text file")
     sh.set_defaults(func=_cmd_show)
     return parser
 

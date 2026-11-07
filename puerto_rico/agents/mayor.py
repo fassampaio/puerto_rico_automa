@@ -1,9 +1,9 @@
-"""Planejamento da distribuição de colonos no Prefeito.
+"""Planning the colonist allocation in the Mayor phase.
 
-Colocar um colono por vez de forma gulosa erra quando o valor está em pares
-(plantação + prédio de produção do mesmo bem). O planejador considera
-movimentos simples (1 colono) e pares (plantação + prédio) e, no modo
-completo, testa cada primeiro movimento seguido de um complemento guloso.
+Placing one colonist at a time greedily fails when the value lies in pairs
+(plantation + production building of the same good). The planner considers
+single moves (1 colonist) and pairs (plantation + building) and, in thorough
+mode, tries every first move followed by a greedy completion.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ def _add(w: GameState, p: int, code: int, delta: int) -> None:
 def _moves(free: list[int], last: int, pool: int) -> list[tuple[int, ...]]:
     moves: list[tuple[int, ...]] = [(c,) for c in range(last, len(free)) if free[c] > 0]
     if pool >= 2:
-        for g in range(1, NUM_GOODS):  # milho não precisa de prédio
+        for g in range(1, NUM_GOODS):  # corn needs no building
             if g < last or free[g] <= 0:
                 continue
             for b in PRODUCTION_BY_GOOD[g]:
@@ -45,7 +45,7 @@ def _apply_move(w: GameState, p: int, move: tuple[int, ...], free: list[int], d:
 def _greedy(
     w: GameState, p: int, profile: Profile, R: float, free: list[int], last: int, pool: int
 ) -> list[int]:
-    """Completa a alocação de forma gulosa (pelo ganho absoluto); altera w e free."""
+    """Complete the allocation greedily (by absolute gain); mutates w and free."""
     placed: list[int] = []
     base = evaluate(w, p, profile, R)
     while pool > 0:
@@ -65,7 +65,7 @@ def _greedy(
 
 
 def plan_placements(s: GameState, p: int, profile: Profile, thorough: bool = True) -> list[int]:
-    """Lista de alvos (códigos do Prefeito) para os colonos que faltam colocar."""
+    """List of targets (Mayor codes) for the colonists still to be placed."""
     R = remaining_rounds(s)
     pool, last = s.san_juan[p], s.mayor_last
     if not thorough:

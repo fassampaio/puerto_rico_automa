@@ -16,21 +16,21 @@ def _decide(agent, s):
 
 
 def test_profiles_and_levels_lookup():
-    assert set(PROFILES) == {"equilibrado", "exportador", "construtor", "comerciante"}
-    assert get_level("dificil").temperature == 0
+    assert set(PROFILES) == {"balanced", "shipper", "builder", "trader"}
+    assert get_level("hard").temperature == 0
     with pytest.raises(ValueError):
         get_profile("xyz")
     with pytest.raises(ValueError):
         get_level("xyz")
-    agent = make_agent("heuristic:profile=exportador,level=facil", seed=1)
-    assert agent.profile.name == "exportador" and not agent.lookahead
+    agent = make_agent("heuristic:profile=shipper,level=easy", seed=1)
+    assert agent.profile.name == "shipper" and not agent.lookahead
 
 
 def test_evaluation_equals_score_at_game_end():
     result = play_game([RandomAgent(i) for i in range(3)], seed=2)
     s = result.final_state
     for p in range(3):
-        assert evaluate(s, p, PROFILES["equilibrado"]) == score(s, p)
+        assert evaluate(s, p, PROFILES["balanced"]) == score(s, p)
     assert progress(fresh()) == 0.0
 
 
@@ -38,7 +38,7 @@ def test_trader_sells_most_valuable_good():
     s = fresh()
     give_goods(s, 0, [1, 0, 0, 0, 1])
     choose(s, Role.TRADER)
-    agent = HeuristicAgent(seed=0, level="dificil")
+    agent = HeuristicAgent(seed=0, level="hard")
     assert _decide(agent, s) == Action(K.SELL, Good.COFFEE)
 
 
@@ -46,7 +46,7 @@ def test_captain_ships_rather_than_wharf_waste():
     s = fresh()
     give_goods(s, 0, [4, 0, 0, 0, 0])
     choose(s, Role.CAPTAIN)
-    agent = HeuristicAgent(seed=0, level="dificil")
+    agent = HeuristicAgent(seed=0, level="hard")
     action = _decide(agent, s)
     assert action.kind == K.SHIP
 
@@ -55,17 +55,17 @@ def test_builder_with_money_buys_something():
     s = fresh()
     s.money[0] = 8
     choose(s, Role.BUILDER)
-    agent = HeuristicAgent(seed=0, level="dificil")
+    agent = HeuristicAgent(seed=0, level="hard")
     assert _decide(agent, s).kind == K.BUILD
 
 
 def test_mayor_planner_prefers_production_pair():
     s = fresh()
-    set_island(s, 0, [1, 1, 0, 0, 0, 0])  # milho e anil, sem colonos
+    set_island(s, 0, [1, 1, 0, 0, 0, 0])  # corn and indigo, unmanned
     give_building(s, 0, B.SMALL_INDIGO_PLANT, manned=0)
-    choose(s, Role.MAYOR)  # p0 recebe 2 colonos para 3 vagas
+    choose(s, Role.MAYOR)  # p0 gets 2 colonists for 3 slots
     assert s.phase == Phase.MAYOR and s.actor == 0
-    agent = HeuristicAgent(seed=0, level="dificil")
+    agent = HeuristicAgent(seed=0, level="hard")
     while s.phase == Phase.MAYOR and s.actor == 0:
         step(s, _decide(agent, s))
     assert s.island_manned[0][Good.INDIGO] == 1
@@ -74,10 +74,10 @@ def test_mayor_planner_prefers_production_pair():
     assert OFF + B.SMALL_INDIGO_PLANT > Good.INDIGO
 
 
-@pytest.mark.parametrize("level", ["facil", "medio", "dificil"])
+@pytest.mark.parametrize("level", ["easy", "medium", "hard"])
 def test_full_game_only_legal_actions(level):
     agents = [HeuristicAgent(seed=i, level=level) for i in range(3)]
-    result = play_game(agents, seed=9)  # play_game valida cada ação
+    result = play_game(agents, seed=9)  # play_game validates every action
     assert result.final_state.is_terminal
 
 
@@ -86,6 +86,6 @@ def test_heuristic_beats_random():
     for g in range(8):
         agents = [RandomAgent(g * 10 + i) for i in range(4)]
         seat = g % 4
-        agents[seat] = HeuristicAgent(seed=g, level="medio")
+        agents[seat] = HeuristicAgent(seed=g, level="medium")
         wins += seat in play_game(agents, seed=100 + g).winners
     assert wins >= 6

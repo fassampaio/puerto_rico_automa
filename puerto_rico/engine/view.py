@@ -1,4 +1,4 @@
-"""Visão de um jogador: o estado sem informação oculta."""
+"""A player's view: the state without hidden information."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ from .state import GameState
 
 
 def view_for(s: GameState, player: int) -> GameState:
-    """Cópia do estado em que a ordem da pilha de plantações é desconhecida.
+    """Copy of the state in which the order of the plantation stack is unknown.
 
-    O conteúdo da pilha é público (dá para deduzir contando), mas a ordem não:
-    a pilha é ordenada e a semente zerada, para que um agente não consiga prever
-    os sorteios. Simulações feitas sobre a visão devem embaralhar a pilha.
+    The stack contents are public (they can be deduced by counting), but the order
+    is not: the stack is sorted and the seed zeroed, so an agent cannot predict
+    draws. Simulations run on a view should shuffle the stack first.
     """
     v = s.clone()
     v.plantation_stack.sort()

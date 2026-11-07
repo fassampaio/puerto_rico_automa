@@ -1,4 +1,4 @@
-"""Estado completo de uma partida."""
+"""Complete state of a game."""
 
 from __future__ import annotations
 
@@ -33,48 +33,48 @@ class Phase(IntEnum):
 class GameState:
     num_players: int
     seed: int
-    # --- por jogador ---
+    # --- per player ---
     money: list[int]
-    vp: list[int]  # fichas de PV
-    island: list[list[int]]  # [p][tipo de lote] quantidade (tipo 5 = pedreira)
-    island_manned: list[list[int]]  # [p][tipo] quantos desses lotes têm colono
-    city: list[list[int]]  # [p][prédio] 0/1
-    city_manned: list[list[int]]  # [p][prédio] colonos no prédio
-    san_juan: list[int]  # colonos sem lugar
-    goods: list[list[int]]  # [p][bem]
-    # --- reservas e tabuleiro ---
-    vp_supply: int  # pode ficar negativa (PV concedidos além da reserva)
+    vp: list[int]  # VP chips
+    island: list[list[int]]  # [p][tile type] count (type 5 = quarry)
+    island_manned: list[list[int]]  # [p][tile type] how many of those tiles have a colonist
+    city: list[list[int]]  # [p][building] 0/1
+    city_manned: list[list[int]]  # [p][building] colonists in the building
+    san_juan: list[int]  # colonists without a place
+    goods: list[list[int]]  # [p][good]
+    # --- supplies and board ---
+    vp_supply: int  # may go negative (VP awarded beyond the supply)
     colonist_supply: int
     colonist_ship: int
     quarry_supply: int
     goods_supply: list[int]
     building_supply: list[int]
-    plantation_stack: list[int]  # topo = fim da lista
+    plantation_stack: list[int]  # top = end of the list
     plantation_discard: list[int]
     faceup: list[int]
     reshuffles: int
     ship_capacity: list[int]
-    ship_good: list[int]  # -1 = vazio
+    ship_good: list[int]  # -1 = empty
     ship_load: list[int]
     trading_house: list[int]
-    roles: tuple[int, ...]  # papéis em jogo
-    role_money: list[int]  # [papel] dobrões acumulados
+    roles: tuple[int, ...]  # roles in play
+    role_money: list[int]  # [role] accumulated doubloons
     role_taken: list[bool]
-    # --- fluxo ---
+    # --- flow ---
     governor: int = 0
-    picks: int = 0  # papéis escolhidos nesta rodada
+    picks: int = 0  # roles chosen this round
     round: int = 0
     phase: Phase = Phase.ROLE_SELECTION
     actor: int = 0
-    role_player: int = -1  # quem escolheu o papel em andamento
+    role_player: int = -1  # who chose the role being resolved
     current_role: int = -1
-    turn: int = 0  # deslocamento a partir de role_player na fase atual
+    turn: int = 0  # offset from role_player within the current phase
     end_triggered: bool = False
-    end_reasons: list[str] = field(default_factory=list)  # ver rules.END_*
+    end_reasons: list[str] = field(default_factory=list)  # see rules.END_*
     hacienda_done: bool = False
     mayor_last: int = 0
     craft_options: list[int] = field(default_factory=list)
-    captain_idle: int = 0  # jogadores seguidos sem embarcar
+    captain_idle: int = 0  # consecutive players who did not ship
     captain_privilege_used: bool = False
     wharf_used: list[bool] = field(default_factory=list)
     legal_cache: list | None = None
@@ -124,10 +124,10 @@ class GameState:
             captain_idle=self.captain_idle,
             captain_privilege_used=self.captain_privilege_used,
             wharf_used=self.wharf_used[:],
-            legal_cache=self.legal_cache,  # nunca é alterada no lugar
+            legal_cache=self.legal_cache,  # never mutated in place
         )
 
-    # --- consultas ---
+    # --- queries ---
     @property
     def is_terminal(self) -> bool:
         return self.phase == Phase.GAME_OVER
@@ -146,7 +146,7 @@ class GameState:
         return self.island_manned[p][QUARRY]
 
     def production(self, p: int, g: int) -> int:
-        """Barris do bem g que o jogador produziria no Artesão."""
+        """Barrels of good g the player would produce in the Craftsman phase."""
         manned = self.island_manned[p][g]
         if g == Good.CORN:
             return manned
@@ -163,7 +163,7 @@ class GameState:
         return self.san_juan[p] + sum(self.island_manned[p]) + sum(self.city_manned[p])
 
     def free_slots(self, p: int) -> list[int]:
-        """Vagas livres por alvo do Prefeito (0-5 lotes, 6+ prédios)."""
+        """Free colonist slots per Mayor target (0-5 island tiles, 6+ buildings)."""
         isl, im = self.island[p], self.island_manned[p]
         row, cm = self.city[p], self.city_manned[p]
         free = [isl[t] - im[t] for t in range(NUM_TILE_TYPES)]

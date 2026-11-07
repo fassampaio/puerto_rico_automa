@@ -1,4 +1,4 @@
-"""Partidas aleatórias completas: invariantes, término, determinismo e clonagem."""
+"""Full random games: invariants, termination, determinism and cloning."""
 
 import random
 from dataclasses import asdict
@@ -24,10 +24,10 @@ def test_random_games_keep_invariants(n):
         decisions = 0
         while not s.is_terminal:
             acts = legal_actions(s)
-            assert len(acts) >= 2, f"decisão sem escolha real em {s.phase.name}"
+            assert len(acts) >= 2, f"decision without a real choice in {s.phase.name}"
             step(s, rng.choice(acts))
             errors = check_invariants(s)
-            assert errors == [], f"seed={seed} decisão={decisions}: {errors}"
+            assert errors == [], f"seed={seed} decision={decisions}: {errors}"
             decisions += 1
             assert decisions < 5000
         assert s.round < 40
@@ -57,4 +57,4 @@ def test_view_hides_stack_order():
     v = view_for(s, 0)
     assert v.plantation_stack == sorted(s.plantation_stack)
     assert v.seed == 0
-    assert s.plantation_stack != sorted(s.plantation_stack)  # o original segue embaralhado
+    assert s.plantation_stack != sorted(s.plantation_stack)  # the original stays shuffled

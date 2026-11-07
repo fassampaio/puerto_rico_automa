@@ -1,9 +1,9 @@
-"""Motor de regras: criação da partida, jogadas válidas e transições de estado.
+"""Rules engine: game creation, legal actions and state transitions.
 
-O motor é puro (sem I/O) e determinístico: uma partida é totalmente definida por
-(num_players, seed, ações escolhidas). Decisões com uma única opção válida são
-aplicadas automaticamente, então os agentes só são consultados em escolhas reais.
-As interpretações de regras estão documentadas em ARQUITETURA.md.
+The engine is pure (no I/O) and deterministic: a game is fully defined by
+(num_players, seed, chosen actions). Decisions with a single legal option are
+applied automatically, so agents are only consulted for real choices.
+Rule interpretations are documented in ARCHITECTURE.md.
 """
 
 from __future__ import annotations
@@ -42,7 +42,7 @@ class IllegalActionError(ValueError):
     pass
 
 
-# Motivos de fim de jogo (registrados em GameState.end_reasons)
+# Game end reasons (recorded in GameState.end_reasons)
 END_VP = "vp_exhausted"
 END_CITY = "city_full"
 END_COLONISTS = "colonists_exhausted"
@@ -55,7 +55,7 @@ def _trigger_end(s: GameState, reason: str) -> None:
 
 
 # ======================================================================
-# API pública
+# Public API
 # ======================================================================
 
 
@@ -115,17 +115,17 @@ def legal_actions(s: GameState) -> list[Action]:
 
 
 def step(s: GameState, action: Action, validate: bool = True) -> None:
-    """Aplica a ação no próprio estado e avança até a próxima decisão real."""
+    """Apply the action in place and advance to the next real decision."""
     if s.phase == Phase.GAME_OVER:
-        raise IllegalActionError("a partida já terminou")
+        raise IllegalActionError("the game is already over")
     if validate and action not in legal_actions(s):
-        raise IllegalActionError(f"ação inválida em {s.phase.name}: {action!r}")
+        raise IllegalActionError(f"illegal action in {s.phase.name}: {action!r}")
     _do(s, action)
     _auto(s)
 
 
 def apply(s: GameState, action: Action, validate: bool = True) -> GameState:
-    """Versão funcional de step: devolve um novo estado."""
+    """Functional version of step: returns a new state."""
     c = s.clone()
     step(c, action, validate)
     return c
@@ -151,7 +151,7 @@ def sale_price(s: GameState, p: int, g: int, privilege: bool | None = None) -> i
 
 
 def shipping_options(s: GameState, p: int) -> tuple[list[Action], list[Action]]:
-    """(embarques em navios, embarques no Wharf) válidos para o jogador p."""
+    """(cargo ship shipments, Wharf shipments) legal for player p."""
     cargo: list[Action] = []
     goods = s.goods[p]
     for g in range(NUM_GOODS):
@@ -182,7 +182,7 @@ def shipping_options(s: GameState, p: int) -> tuple[list[Action], list[Action]]:
 
 
 # ======================================================================
-# Laço interno
+# Internal loop
 # ======================================================================
 
 
@@ -242,7 +242,7 @@ def _do(s: GameState, a: Action) -> None:
     elif ph == Phase.CAPTAIN_STORE:
         _do_store(s, a)
     else:
-        raise IllegalActionError("a partida já terminou")
+        raise IllegalActionError("the game is already over")
 
 
 def _player_at(s: GameState, offset: int) -> int:
@@ -250,7 +250,7 @@ def _player_at(s: GameState, offset: int) -> int:
 
 
 # ======================================================================
-# Escolha de papéis e rodadas
+# Role selection and rounds
 # ======================================================================
 
 
@@ -275,7 +275,7 @@ def _choose_role(s: GameState, r: int) -> None:
         _trader_next(s)
     elif r == Role.CAPTAIN:
         _captain_begin(s)
-    else:  # Garimpeiro
+    else:  # Prospector
         s.money[p] += 1
         _finish_role(s)
 
@@ -309,7 +309,7 @@ def _end_round(s: GameState) -> None:
 
 
 def _take_colonist(s: GameState) -> bool:
-    """Colono para Hospice/University: da reserva; se vazia, do navio."""
+    """Colonist for Hospice/University: from the supply; if empty, from the ship."""
     if s.colonist_supply > 0:
         s.colonist_supply -= 1
         return True
@@ -320,7 +320,7 @@ def _take_colonist(s: GameState) -> bool:
 
 
 # ======================================================================
-# Colono (Settler)
+# Settler
 # ======================================================================
 
 
@@ -405,13 +405,13 @@ def _do_settle(s: GameState, a: Action) -> None:
 
 
 # ======================================================================
-# Prefeito (Mayor)
+# Mayor
 # ======================================================================
 
 
 def _mayor_begin(s: GameState) -> None:
     n, rp = s.num_players, s.role_player
-    if s.colonist_supply > 0:  # privilégio
+    if s.colonist_supply > 0:  # privilege
         s.colonist_supply -= 1
         s.san_juan[rp] += 1
     i = 0
@@ -430,7 +430,7 @@ def _mayor_next(s: GameState) -> None:
         row, cm = s.city[p], s.city_manned[p]
         pool = s.san_juan[p] + sum(im) + sum(cm)
         cap = s.colonist_capacity(p)
-        if pool >= cap:  # sem escolha: tudo ocupado
+        if pool >= cap:  # no choice: fill everything
             for t in range(NUM_TILE_TYPES):
                 im[t] = isl[t]
             for b in range(NUM_BUILDINGS):
@@ -460,7 +460,7 @@ def _mayor_legal(s: GameState) -> list[Action]:
     suffix = [0] * (len(free) + 1)
     for i in range(len(free) - 1, -1, -1):
         suffix[i] = suffix[i + 1] + free[i]
-    # ordem canônica (alvos não decrescentes) e só alvos que deixam lugar para o resto
+    # canonical order (non-decreasing targets), only targets that leave room for the rest
     return [
         Action(K.PLACE, code)
         for code in range(s.mayor_last, len(free))
@@ -500,7 +500,7 @@ def _mayor_end(s: GameState) -> None:
 
 
 # ======================================================================
-# Construtor (Builder)
+# Builder
 # ======================================================================
 
 
@@ -545,7 +545,7 @@ def _do_build(s: GameState, a: Action) -> None:
 
 
 # ======================================================================
-# Artesão (Craftsman)
+# Craftsman
 # ======================================================================
 
 
@@ -581,7 +581,7 @@ def _do_craft_bonus(s: GameState, g: int) -> None:
 
 
 # ======================================================================
-# Comerciante (Trader)
+# Trader
 # ======================================================================
 
 
@@ -623,7 +623,7 @@ def _do_sell(s: GameState, a: Action) -> None:
 
 
 # ======================================================================
-# Capitão (Captain)
+# Captain
 # ======================================================================
 
 
@@ -650,7 +650,7 @@ def _captain_next(s: GameState) -> None:
 
 def _do_ship(s: GameState, a: Action) -> None:
     p = s.actor
-    if a.kind == K.PASS:  # só possível quando a única opção é o Wharf
+    if a.kind == K.PASS:  # only possible when the Wharf is the only option
         s.captain_idle += 1
         s.turn += 1
         _captain_next(s)

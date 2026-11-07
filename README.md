@@ -1,28 +1,28 @@
 # Puerto Rico Automa
 
-Simulador do jogo de tabuleiro **Puerto Rico** (jogo base, 3 a 5 jogadores) com jogadores automáticos, para:
+A simulator of the board game **Puerto Rico** (base game, 3 to 5 players) with automated players, to:
 
-- **jogar contra bots** com níveis de dificuldade e estilos variados;
-- **analisar estratégias** rodando milhares de partidas entre bots.
+- **play against bots** with different difficulty levels and styles;
+- **analyze strategies** by running thousands of games between bots.
 
-> Projeto de fãs, não oficial e sem fins comerciais. *Puerto Rico* é um jogo de Andreas Seyfarth; nome e marca pertencem às suas editoras. Este repositório implementa apenas a mecânica das regras para fins de simulação e não contém arte, textos do manual nem outros materiais do jogo publicado.
+> Unofficial, non-commercial fan project. *Puerto Rico* is a game by Andreas Seyfarth; the name and trademark belong to its publishers. This repository only implements the rules mechanics for simulation purposes and contains no artwork, rulebook text or other material from the published game.
 
-## Situação
+## Status
 
-| Etapa | Status |
+| Step | Status |
 |---|---|
-| 1. Motor de regras + testes | ✅ |
-| 2. Runner, registro de partidas, torneios | ✅ |
-| 3. Bot heurístico com perfis de estilo | ✅ |
-| 4. Interface de terminal para jogar | ⏳ |
-| 5. Bot MCTS com níveis de dificuldade | ⏳ |
-| 6. Relatórios de análise | ⏳ |
+| 1. Rules engine + tests | ✅ |
+| 2. Runner, game logs, tournaments | ✅ |
+| 3. Heuristic bot with style profiles | ✅ |
+| 4. Terminal UI to play | ⏳ |
+| 5. MCTS bot with difficulty levels | ⏳ |
+| 6. Analysis reports | ⏳ |
 
-Detalhes do projeto e das interpretações de regras em [ARQUITETURA.md](ARQUITETURA.md).
+Design details and rule interpretations are in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-## Requisitos
+## Requirements
 
-Python 3.12 ou mais recente. O motor não tem dependências; os testes usam `pytest`.
+Python 3.12 or newer. The engine has no dependencies; the tests use `pytest`.
 
 ```bash
 python -m venv .venv
@@ -30,67 +30,67 @@ python -m venv .venv
 pip install pytest ruff
 ```
 
-## Uso
+## Usage
 
-Testes:
+Tests:
 ```bash
 python -m pytest
 ```
 
-Torneio entre agentes (registra cada partida em JSONL e mostra um resumo):
+Tournament between agents (logs every game to JSONL and prints a summary):
 ```bash
-python -m puerto_rico tournament --agents random random random random --games 1000 --workers 4 --out logs/torneio.jsonl
+python -m puerto_rico tournament --agents random random random random --games 1000 --workers 4 --out logs/tournament.jsonl
 ```
 
-Agentes disponíveis (especificação `nome:param=valor,...`):
+Available agents (specification `name:param=value,...`):
 
-| Especificação | Descrição |
+| Specification | Description |
 |---|---|
-| `random` | joga ao acaso |
-| `heuristic` | bot heurístico (padrão: `profile=equilibrado`, `level=medio`) |
-| `heuristic:profile=exportador,level=dificil` | estilos: `equilibrado`, `exportador`, `construtor`, `comerciante` · níveis: `facil`, `medio`, `dificil` |
+| `random` | plays at random |
+| `heuristic` | heuristic bot (default: `profile=balanced`, `level=medium`) |
+| `heuristic:profile=shipper,level=hard` | profiles: `balanced`, `shipper`, `builder`, `trader` · levels: `easy`, `medium`, `hard` |
 
 ```bash
-python -m puerto_rico tournament -a heuristic:level=dificil heuristic:level=medio heuristic:level=facil random -g 120 -w 2
+python -m puerto_rico tournament -a heuristic:level=hard heuristic:level=medium heuristic:level=easy random -g 120 -w 2
 ```
 
-Narrar uma partida registrada (na tela, ou num arquivo de texto com `-o`):
+Narrate a recorded game (on screen, or to a text file with `-o`):
 ```bash
-python -m puerto_rico show logs/torneio.jsonl --game 0 -o logs/partida0.txt
+python -m puerto_rico show logs/tournament.jsonl --game 0 -o logs/game0.txt
 ```
 
-Registros e narrações são gravados só em ASCII (sem acentos nem cedilha).
+Logs and narrations are written in plain ASCII.
 
-Velocidade do motor:
+Engine speed:
 ```bash
 python scripts/bench.py 500 4
 ```
 
-### Usando o motor em código
+### Using the engine from code
 
 ```python
 from puerto_rico.engine import new_game, legal_actions, step, final_scores
 
 s = new_game(num_players=4, seed=42)
 while not s.is_terminal:
-    acts = legal_actions(s)   # só aparecem decisões com escolha real
+    acts = legal_actions(s)   # only decisions with a real choice show up
     step(s, acts[0])
 print(final_scores(s))
 ```
 
-## Estrutura
+## Layout
 
 ```
 puerto_rico/
-  engine/     regras puras, determinísticas e clonáveis
-  agents/     interface Agent, registro de agentes, RandomAgent
-  runner/     partidas, registro JSONL, torneios em paralelo
-  analysis/   estatísticas dos torneios
-  cli/        linha de comando (python -m puerto_rico)
-tests/        testes por regra, de invariantes e do runner
-scripts/      utilitários (benchmark)
+  engine/     pure, deterministic, cloneable rules
+  agents/     Agent interface, agent registry, random and heuristic bots
+  runner/     games, JSONL records, parallel tournaments
+  analysis/   tournament statistics
+  cli/        command line (python -m puerto_rico)
+tests/        per-rule, invariant, runner and bot tests
+scripts/      utilities (benchmark)
 ```
 
-## Licença
+## License
 
 [MIT](LICENSE)

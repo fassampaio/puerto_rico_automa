@@ -1,13 +1,13 @@
-"""Avaliação heurística de um estado: pontos finais estimados de cada jogador.
+"""Heuristic state evaluation: estimated final points for each player.
 
-valor = pontos atuais (fichas + prédios + bônus)
-      + dinheiro convertido em PV (vale mais no começo)
-      + barris guardados
-      + capacidade de produção futura × rodadas restantes
-      + utilidade dos prédios violeta × rodadas restantes
-      + preferências do perfil
+value = current points (VP chips + buildings + bonus)
+      + money converted to VP (worth more early on)
+      + stored barrels
+      + future production capacity x remaining rounds
+      + violet building utility x remaining rounds
+      + profile preferences
 
-Na partida terminada, o valor é exatamente a pontuação final.
+When the game is over, the value is exactly the final score.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ from .profiles import Profile
 TYPICAL_ROUNDS = 15.0
 _LARGE = (B.GUILD_HALL, B.RESIDENCE, B.FORTRESS, B.CUSTOMS_HOUSE, B.CITY_HALL)
 
-# utilidade por rodada (em PV) dos prédios violeta: (prédio, grupo do perfil, valor)
+# per-round utility (in VP) of violet buildings: (building, profile group, value)
 _UTILITY = (
     (B.SMALL_MARKET, "trade", 0.10),
     (B.LARGE_MARKET, "trade", 0.18),
@@ -44,11 +44,11 @@ _UTILITY = (
     (B.HARBOR, "ship", 0.40),
     (B.WHARF, "ship", 0.45),
 )
-UNMANNED_FACTOR = 0.6  # prédio/lote sem colono: deve receber um mais tarde
+UNMANNED_FACTOR = 0.6  # unmanned building/tile: should get a colonist later
 
 
 def progress(s: GameState) -> float:
-    """Fração estimada da partida já jogada (0 a 1)."""
+    """Estimated fraction of the game already played (0 to 1)."""
     setup = SETUP[s.num_players]
     t_vp = 1.0 - s.vp_supply / setup.vp_chips
     t_col = 1.0 - s.colonist_supply / setup.colonists
@@ -71,13 +71,13 @@ def evaluate(s: GameState, p: int, profile: Profile, rounds: float | None = None
         return value
 
     frac = min(1.0, R / TYPICAL_ROUNDS)
-    # dinheiro vira prédios: vale bem até as últimas rodadas
+    # money turns into buildings: it stays valuable until the last rounds
     money_rate = 0.20 + 0.50 * min(1.0, R / 8.0)
     value += s.money[p] * money_rate
-    # o estilo "construtor" valoriza os prédios (não o dinheiro guardado)
+    # the "builder" style values buildings (not hoarded money)
     value += (profile.build - 1.0) * building_points(s, p) * frac
 
-    # valor de um barril de cada bem (embarque + venda)
+    # value of one barrel of each good (shipping + selling)
     barrel = [
         0.6 * profile.ship + 0.7 * profile.trade * GOOD_PRICE[g] * money_rate
         for g in range(NUM_GOODS)
@@ -85,7 +85,7 @@ def evaluate(s: GameState, p: int, profile: Profile, rounds: float | None = None
     goods = s.goods[p]
     value += sum(goods[g] * barrel[g] for g in range(NUM_GOODS))
 
-    # produção: atual e potencial (plantações + prédios ainda sem colono)
+    # production: current and potential (plantations + buildings not yet manned)
     isl, im, row, cm = s.island[p], s.island_manned[p], s.city[p], s.city_manned[p]
     prod_rate = 0.35 * R * profile.production
     kinds = 0
@@ -100,13 +100,13 @@ def evaluate(s: GameState, p: int, profile: Profile, rounds: float | None = None
             pot = min(isl[g], cap)
         value += prod_rate * barrel[g] * (prod + 0.35 * max(0, pot - prod))
 
-    # lotes da ilha e pedreiras
+    # island tiles and quarries
     value += 0.03 * R * sum(isl)
     quarry_value = money_rate * R * 0.3 * profile.build
     manned_q = min(im[QUARRY], 4)
     value += quarry_value * (manned_q + 0.4 * max(0, min(isl[QUARRY], 4) - manned_q))
 
-    # prédios violeta
+    # violet buildings
     weights = {
         "trade": profile.trade,
         "ship": profile.ship,
@@ -119,7 +119,7 @@ def evaluate(s: GameState, p: int, profile: Profile, rounds: float | None = None
     if row[B.FACTORY]:
         bonus = FACTORY_BONUS[kinds] * money_rate * 0.3 * R
         value += bonus if cm[B.FACTORY] else UNMANNED_FACTOR * bonus
-    for b in _LARGE:  # prédio grande sem colono ainda pode render bônus
+    for b in _LARGE:  # an unmanned large building may still score its bonus
         if row[b] and not cm[b]:
             value += 2.0
     value += 0.05 * R * s.san_juan[p]
@@ -135,6 +135,6 @@ def evaluate_all(s: GameState, profile: Profile) -> list[float]:
 
 
 def relative_value(values: list[float], p: int, aggression: float) -> float:
-    """Valor do jogador p descontando parte da média dos adversários."""
+    """Value of player p minus part of the opponents' average."""
     others = [v for q, v in enumerate(values) if q != p]
     return values[p] - aggression * (sum(others) / len(others))

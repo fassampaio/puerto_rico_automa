@@ -35,7 +35,7 @@ def test_residence():
 
 def test_fortress_customs_city_hall():
     s = fresh()
-    give_building(s, 2, B.FORTRESS)  # 1 colono
+    give_building(s, 2, B.FORTRESS)  # 1 colonist
     s.san_juan[2] = 6
     assert bonus_points(s, 2) == 7 // 3
 
@@ -45,7 +45,7 @@ def test_fortress_customs_city_hall():
 
     give_building(s, 0, B.CITY_HALL)
     give_building(s, 0, B.SMALL_MARKET, manned=0)
-    give_building(s, 0, B.SMALL_INDIGO_PLANT, manned=0)  # produção não conta
+    give_building(s, 0, B.SMALL_INDIGO_PLANT, manned=0)  # production buildings do not count
     assert bonus_points(s, 0) == 2
 
 

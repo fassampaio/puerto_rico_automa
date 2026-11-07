@@ -1,8 +1,8 @@
-"""Registro de agentes: cria agentes a partir de especificações em texto.
+"""Agent registry: builds agents from text specifications.
 
-Formato: ``nome`` ou ``nome:param=valor,param2=valor`` (ex.: ``mcts:budget=500``).
-A especificação completa vira o nome do agente nos registros e resumos.
-Agentes recebem sempre um ``seed`` para que torneios sejam reproduzíveis.
+Format: ``name`` or ``name:param=value,param2=value`` (e.g. ``heuristic:level=hard``).
+The full specification becomes the agent name in records and summaries.
+Agents always receive a ``seed`` so tournaments are reproducible.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ AgentFactory = Callable[..., Agent]
 
 AGENTS: dict[str, AgentFactory] = {
     "random": RandomAgent,
-    "heuristic": HeuristicAgent,  # heuristic:profile=exportador,level=dificil
+    "heuristic": HeuristicAgent,  # heuristic:profile=shipper,level=hard
 }
 
 
@@ -43,7 +43,7 @@ def parse_spec(spec: str) -> tuple[str, dict[str, object]]:
         for item in params.split(","):
             key, sep, value = item.partition("=")
             if not sep or not key:
-                raise ValueError(f"parâmetro inválido em '{spec}': '{item}'")
+                raise ValueError(f"invalid parameter in '{spec}': '{item}'")
             kwargs[key.strip()] = _convert(value.strip())
     return name.strip(), kwargs
 
@@ -51,7 +51,7 @@ def parse_spec(spec: str) -> tuple[str, dict[str, object]]:
 def make_agent(spec: str, seed: int) -> Agent:
     name, kwargs = parse_spec(spec)
     if name not in AGENTS:
-        raise ValueError(f"agente desconhecido '{name}'. Disponíveis: {', '.join(sorted(AGENTS))}")
+        raise ValueError(f"unknown agent '{name}'. Available: {', '.join(sorted(AGENTS))}")
     agent = AGENTS[name](seed=seed, **kwargs)
     agent.name = spec
     return agent

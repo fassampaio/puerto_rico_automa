@@ -38,9 +38,9 @@ def test_starting_plantations():
 def test_unused_roles_gain_money_and_governor_rotates():
     s = fresh(4)
     choose(s, Role.PROSPECTOR)  # p0: +1
-    choose(s, Role.CRAFTSMAN)  # ninguém produz
-    choose(s, Role.TRADER)  # ninguém tem bens
-    choose(s, Role.CAPTAIN)  # ninguém embarca
+    choose(s, Role.CRAFTSMAN)  # nobody produces
+    choose(s, Role.TRADER)  # nobody has goods
+    choose(s, Role.CAPTAIN)  # nobody ships
     assert s.money == [4, 3, 3, 3]
     assert s.round == 1 and s.governor == 1 and s.actor == 1
     for r in (Role.SETTLER, Role.MAYOR, Role.BUILDER):

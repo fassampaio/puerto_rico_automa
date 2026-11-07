@@ -1,4 +1,4 @@
-"""Agente que escolhe jogadas ao acaso (testes e linha de base)."""
+"""Agent that picks moves at random (tests and baseline)."""
 
 from __future__ import annotations
 

@@ -1,10 +1,10 @@
-"""Torneios: muitas partidas entre agentes, com rotação de assentos e paralelismo.
+"""Tournaments: many games between agents, with seat rotation and parallelism.
 
-Partidas são agrupadas em "mãos" de N jogos: a mesma semente (mesma distribuição
-de plantações) é jogada N vezes, girando os agentes pelos assentos. Isso reduz a
-variância da comparação entre agentes. O resultado de cada partida depende só de
-(configuração, índice da partida), então o torneio dá o mesmo resultado com
-qualquer número de processos.
+Games are grouped into "deals" of N games: the same seed (same plantation
+order) is played N times, rotating the agents through the seats. This reduces
+the variance when comparing agents. Each game's result depends only on
+(configuration, game index), so the tournament gives the same result with any
+number of processes.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from .records import dumps, game_record
 
 @dataclass(frozen=True)
 class TournamentConfig:
-    agents: tuple[str, ...]  # especificações (ver agents.registry)
+    agents: tuple[str, ...]  # specifications (see agents.registry)
     games: int
     num_players: int = 4
     seed: int = 0
@@ -33,11 +33,11 @@ class TournamentConfig:
 
     def __post_init__(self) -> None:
         if not self.agents:
-            raise ValueError("informe pelo menos um agente")
+            raise ValueError("give at least one agent")
         if self.num_players not in (3, 4, 5):
-            raise ValueError("num_players deve ser 3, 4 ou 5")
+            raise ValueError("num_players must be 3, 4 or 5")
         if self.games < 1:
-            raise ValueError("games deve ser >= 1")
+            raise ValueError("games must be >= 1")
 
 
 def game_seed(cfg: TournamentConfig, game_index: int) -> int:
@@ -45,7 +45,7 @@ def game_seed(cfg: TournamentConfig, game_index: int) -> int:
 
 
 def lineup(cfg: TournamentConfig, game_index: int) -> list[str]:
-    """Especificação do agente em cada assento para a partida game_index."""
+    """Agent specification in each seat for game game_index."""
     n, m = cfg.num_players, len(cfg.agents)
     group, shift = divmod(game_index, n)
     if m > n:
@@ -68,7 +68,7 @@ def _run_game_args(args: tuple[TournamentConfig, int]) -> dict:
 
 
 def iter_games(cfg: TournamentConfig) -> Iterator[dict]:
-    """Gera os registros das partidas (fora de ordem quando em paralelo)."""
+    """Yield the game records (out of order when running in parallel)."""
     tasks = [(cfg, i) for i in range(cfg.games)]
     if cfg.workers <= 1:
         for task in tasks:

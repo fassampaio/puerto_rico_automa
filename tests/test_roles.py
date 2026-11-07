@@ -23,7 +23,7 @@ from puerto_rico.engine.data import QUARRY
 C, I, S, T, F = Good.CORN, Good.INDIGO, Good.SUGAR, Good.TOBACCO, Good.COFFEE
 
 
-# ---------------------------------------------------------------- Colono
+# ---------------------------------------------------------------- Settler
 def test_settler_quarry_privilege_only_for_chooser():
     s = fresh()
     choose(s, Role.SETTLER)
@@ -53,7 +53,7 @@ def test_hospice_mans_new_plantation_and_faceup_refills():
     step(s, Action(K.SETTLE, t))
     assert s.island_manned[1][t] == 1
     assert s.colonist_supply == supply - 1
-    finish_round(s)  # demais passam / jogam
+    finish_round(s)  # the others play
     assert len(s.faceup) == 5
 
 
@@ -81,14 +81,14 @@ def test_hacienda_draws_from_stack_before_normal_choice():
     assert s.phase == Phase.SETTLER and s.actor == 0
 
 
-# ---------------------------------------------------------------- Prefeito
+# ---------------------------------------------------------------- Mayor
 def test_mayor_privilege_distribution_and_refill():
-    s = fresh()  # navio com 4, reserva 75
+    s = fresh()  # ship holds 4, supply 75
     choose(s, Role.MAYOR)
-    # tudo automático: cada um ocupa sua única plantação
+    # all automatic: each player mans their only plantation
     assert [s.island_manned[p][I] + s.island_manned[p][C] for p in range(4)] == [1, 1, 1, 1]
     assert s.san_juan == [1, 0, 0, 0]
-    assert s.colonist_ship == 4  # max(4 jogadores, 0 círculos vazios)
+    assert s.colonist_ship == 4  # max(4 players, 0 empty circles)
     assert s.colonist_supply == 75 - 1 - 4
 
 
@@ -96,11 +96,11 @@ def test_mayor_canonical_placement_and_choice():
     s = fresh()
     give_building(s, 0, B.SMALL_MARKET, manned=0)
     give_building(s, 0, B.HACIENDA, manned=0)
-    choose(s, Role.MAYOR)  # p0 recebe 2 colonos para 3 vagas
+    choose(s, Role.MAYOR)  # p0 gets 2 colonists for 3 slots
     assert s.phase == Phase.MAYOR and s.actor == 0
     market, hacienda = OFF + B.SMALL_MARKET, OFF + B.HACIENDA
     assert legal_set(s) == {Action(K.PLACE, I), Action(K.PLACE, market)}
-    step(s, Action(K.PLACE, market))  # o resto vai para a Hacienda automaticamente
+    step(s, Action(K.PLACE, market))  # the rest goes to the Hacienda automatically
     assert s.city_manned[0][B.SMALL_MARKET] == 1
     assert s.city_manned[0][B.HACIENDA] == 1
     assert s.island_manned[0][I] == 0
@@ -113,10 +113,10 @@ def test_mayor_refill_counts_empty_building_circles():
     give_building(s, 2, B.LARGE_SUGAR_MILL, manned=0)
     supply_before = s.colonist_supply
     choose(s, Role.MAYOR)
-    # p1 e p2 têm 1 colono cada para 4 vagas: escolhem onde
+    # p1 and p2 have 1 colonist each for 4 slots: they choose where
     while s.phase == Phase.MAYOR:
-        step(s, legal_actions(s)[-1])  # coloca nos prédios
-    empty = 6 - 2  # 6 círculos, 2 ocupados
+        step(s, legal_actions(s)[-1])  # place in the buildings
+    empty = 6 - 2  # 6 circles, 2 manned
     assert s.colonist_ship == max(4, empty)
     assert s.colonist_supply == supply_before - 1 - 4
 
@@ -130,13 +130,13 @@ def test_mayor_triggers_game_end_when_supply_short():
     assert s.is_terminal and s.round == 0
 
 
-# ---------------------------------------------------------------- Construtor
+# ---------------------------------------------------------------- Builder
 def test_builder_costs_with_privilege_and_quarries():
     s = fresh()
     set_island(s, 0, [0, 1, 0, 0, 0, 1], [0, 0, 0, 0, 0, 1])
     s.quarry_supply -= 1
     choose(s, Role.BUILDER)
-    assert building_cost(s, 0, B.LARGE_INDIGO_PLANT) == 1  # 3 - 1 privilégio - 1 pedreira
+    assert building_cost(s, 0, B.LARGE_INDIGO_PLANT) == 1  # 3 - 1 privilege - 1 quarry
     acts = legal_set(s)
     assert Action(K.BUILD, B.TOBACCO_STORAGE) in acts  # 5 - 2 = 3
     assert Action(K.BUILD, B.COFFEE_ROASTER) not in acts  # 6 - 2 = 4 > 3
@@ -180,16 +180,16 @@ def test_filling_city_triggers_end_after_round():
     assert s.is_terminal and s.round == 0
 
 
-# ---------------------------------------------------------------- Artesão
+# ---------------------------------------------------------------- Craftsman
 def test_craftsman_production_privilege_and_factory():
     s = fresh()
     set_island(s, 0, [2, 2, 1, 0, 0, 0], [2, 2, 1, 0, 0, 0])
     give_building(s, 0, B.SMALL_INDIGO_PLANT)
     give_building(s, 0, B.FACTORY)
     choose(s, Role.CRAFTSMAN)
-    # milho 2 (sem prédio), anil min(2,1)=1, açúcar 0 (sem engenho)
+    # corn 2 (no building), indigo min(2,1)=1, sugar 0 (no mill)
     assert s.goods[0] == [2, 1, 0, 0, 0]
-    assert s.money[0] == 3 + 1  # Factory com 2 tipos
+    assert s.money[0] == 3 + 1  # Factory with 2 kinds
     assert s.phase == Phase.CRAFT_BONUS
     assert legal_set(s) == {Action(K.CRAFT_BONUS, C), Action(K.CRAFT_BONUS, I)}
     step(s, Action(K.CRAFT_BONUS, C))
@@ -203,10 +203,10 @@ def test_craftsman_shortage_served_in_order():
     s.goods_supply[C] = 3
     choose(s, Role.CRAFTSMAN)
     assert s.goods[0][C] == 2 and s.goods[1][C] == 1
-    assert s.phase == Phase.ROLE_SELECTION  # reserva vazia: sem privilégio
+    assert s.phase == Phase.ROLE_SELECTION  # empty supply: no privilege
 
 
-# ---------------------------------------------------------------- Comerciante
+# ---------------------------------------------------------------- Trader
 def test_trader_privilege_and_no_duplicates():
     s = fresh()
     give_goods(s, 0, [0, 1, 0, 0, 0])
@@ -214,8 +214,8 @@ def test_trader_privilege_and_no_duplicates():
     give_goods(s, 2, [0, 0, 1, 0, 0])
     choose(s, Role.TRADER)
     step(s, Action(K.SELL, I))
-    assert s.money[0] == 3 + 2  # anil 1 + privilégio
-    assert legal_set(s) == {Action(K.SELL, C), PASS}  # anil já está na casa
+    assert s.money[0] == 3 + 2  # indigo 1 + privilege
+    assert legal_set(s) == {Action(K.SELL, C), PASS}  # indigo is already in the trading house
     step(s, Action(K.SELL, C))
     step(s, Action(K.SELL, S))
     assert s.money[1] == 3 and s.money[2] == 5
@@ -248,9 +248,9 @@ def test_full_trading_house_is_emptied():
     assert s.goods_supply[I] == 11
 
 
-# ---------------------------------------------------------------- Capitão
+# ---------------------------------------------------------------- Captain
 def test_captain_must_use_ship_that_takes_most():
-    s = fresh()  # navios 5, 6, 7
+    s = fresh()  # ships 5, 6, 7
     give_goods(s, 0, [6, 0, 0, 0, 0])
     choose(s, Role.CAPTAIN)
     assert legal_set(s) == {Action(K.SHIP, C, 1), Action(K.SHIP, C, 2)}
@@ -295,10 +295,10 @@ def test_full_ships_unloaded_after_captain():
     give_goods(s, 0, [5, 0, 0, 0, 0])
     give_goods(s, 1, [0, 2, 0, 0, 0])
     choose(s, Role.CAPTAIN)
-    step(s, Action(K.SHIP, C, 0))  # enche o navio de 5
-    # p1 embarca anil (escolha entre navios 1 e 2)
+    step(s, Action(K.SHIP, C, 0))  # fills the 5-ship
+    # p1 ships indigo (choice of ships 1 and 2)
     step(s, Action(K.SHIP, I, 1))
-    assert s.ship_load == [0, 2, 0]  # o navio cheio foi esvaziado
+    assert s.ship_load == [0, 2, 0]  # the full ship was emptied
     assert s.ship_good == [-1, I, -1]
     assert s.goods_supply[C] == 10
 

@@ -1,4 +1,4 @@
-"""Estatísticas incrementais de torneios (não guarda as partidas na memória)."""
+"""Incremental tournament statistics (games are not kept in memory)."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class AgentStats:
-    games: int = 0  # participações (um agente pode ocupar vários assentos)
-    wins: float = 0.0  # empates dividem a vitória
+    games: int = 0  # appearances (an agent may take several seats)
+    wins: float = 0.0  # ties split the win
     score_sum: int = 0
     rank_sum: int = 0
 
@@ -54,13 +54,13 @@ class TournamentSummary:
 
     def format(self) -> str:
         if not self.games:
-            return "Nenhuma partida."
+            return "No games."
         avg_rounds = self.rounds_sum / self.games
         w = max(12, *(len(name) for name in self.agents))
         lines = [
-            f"{self.games} partidas · {self.num_players} jogadores · {avg_rounds:.1f} rodadas",
+            f"{self.games} games | {self.num_players} players | {avg_rounds:.1f} rounds",
             "",
-            f"{'Agente':<{w}} {'Partic.':>8} {'Vitórias':>9} {'Taxa':>7} {'Pontos':>7} {'Posição':>8}",
+            f"{'Agent':<{w}} {'Games':>8} {'Wins':>9} {'Rate':>7} {'Score':>7} {'Rank':>8}",
         ]
         ordered = sorted(self.agents.items(), key=lambda kv: kv[1].win_rate, reverse=True)
         for name, st in ordered:
@@ -69,20 +69,20 @@ class TournamentSummary:
                 f"{st.avg_score:>7.1f} {st.avg_rank:>8.2f}"
             )
         lines.append("")
-        seats = " · ".join(
-            f"J{s + 1} {self.seat_wins[s] / self.games:.1%}" for s in range(self.num_players)
+        seats = " | ".join(
+            f"P{s + 1} {self.seat_wins[s] / self.games:.1%}" for s in range(self.num_players)
         )
-        lines.append(f"Vitórias por assento: {seats}")
-        reasons = " · ".join(
+        lines.append(f"Wins by seat: {seats}")
+        reasons = " | ".join(
             f"{_REASON_NAMES.get(r, r)} {c / self.games:.0%}"
             for r, c in self.end_reasons.most_common()
         )
-        lines.append(f"Fim de jogo por: {reasons}")
+        lines.append(f"Game end by: {reasons}")
         return "\n".join(lines)
 
 
 _REASON_NAMES = {
-    "vp_exhausted": "PV esgotados",
-    "city_full": "cidade cheia",
-    "colonists_exhausted": "colonos esgotados",
+    "vp_exhausted": "VP exhausted",
+    "city_full": "city full",
+    "colonists_exhausted": "colonists exhausted",
 }

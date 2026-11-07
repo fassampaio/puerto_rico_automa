@@ -1,12 +1,12 @@
-"""Bot heurístico: avalia cada jogada pelo estado resultante.
+"""Heuristic bot: judges each move by the resulting state.
 
-- Decisões dentro de uma fase: aplica a jogada e avalia o estado (1 jogada à frente).
-- Escolha de papel (níveis medio/dificil): simula a fase inteira do papel, com
-  todos os jogadores decidindo pela mesma heurística, e avalia o resultado.
-  Assim o bot pesa o próprio ganho contra o que o papel dá aos adversários.
-- O valor é relativo: ganho próprio menos parte da média dos adversários.
-- Prefeito: planeja a alocação completa dos colonos (ver mayor.py).
-- A ordem da pilha de plantações é desconhecida: o bot a embaralha antes de simular.
+- Decisions inside a phase: apply the move and evaluate the state (1-ply).
+- Role selection (medium/hard levels): simulate the role's whole phase, with
+  every player deciding by the same heuristic, and evaluate the outcome.
+  This weighs the bot's own gain against what the role gives the opponents.
+- The value is relative: own gain minus part of the opponents' average.
+- Mayor: plans the full colonist allocation (see mayor.py).
+- The plantation stack order is unknown: the bot shuffles it before simulating.
 """
 
 from __future__ import annotations
@@ -24,8 +24,8 @@ class HeuristicAgent:
     def __init__(
         self,
         seed: int | None = None,
-        profile: str | Profile = "equilibrado",
-        level: str = "medio",
+        profile: str | Profile = "balanced",
+        level: str = "medium",
         temperature: float | None = None,
         lookahead: bool | None = None,
         name: str | None = None,
@@ -68,13 +68,13 @@ class HeuristicAgent:
         return max(acts, key=lambda a: self.action_value(s, a, q))
 
     def mayor_action(self, s: GameState, actions: list[Action], thorough: bool) -> Action:
-        """Segue o plano de alocação: coloca no menor alvo planejado (ordem canônica)."""
+        """Follow the allocation plan: place on the lowest planned target (canonical order)."""
         key = (s.round, s.picks, s.actor, s.san_juan[s.actor], s.mayor_last)
         plan = self._mayor_cache.get(key) if thorough else None
         if plan is None:
             plan = sorted(plan_placements(s, s.actor, self.profile, thorough))
         action = Action(ActionKind.PLACE, plan[0])
-        if action not in actions:  # não deveria acontecer; segurança
+        if action not in actions:  # should not happen; safety net
             q = s.actor
             return max(actions, key=lambda a: self.action_value(s, a, q))
         if thorough:

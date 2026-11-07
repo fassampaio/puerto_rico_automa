@@ -1,4 +1,4 @@
-"""Dados estáticos do jogo base (3 a 5 jogadores)."""
+"""Static data for the base game (3 to 5 players)."""
 
 from __future__ import annotations
 
@@ -15,10 +15,9 @@ class Good(IntEnum):
 
 
 NUM_GOODS = 5
-QUARRY = 5  # índice extra da pedreira nas contagens da ilha
-NUM_TILE_TYPES = 6  # 5 plantações + pedreira
+QUARRY = 5  # extra index for quarries in island counts
+NUM_TILE_TYPES = 6  # 5 plantation types + quarry
 
-# termos do jogo em inglês, como os prédios
 GOOD_NAMES = ("corn", "indigo", "sugar", "tobacco", "coffee")
 TILE_NAMES = GOOD_NAMES + ("quarry",)
 
@@ -31,7 +30,7 @@ CITY_SPACES = 12
 TRADING_HOUSE_SIZE = 4
 NUM_SHIPS = 3
 
-# Factory: bônus em dobrões por nº de tipos produzidos (índice = tipos)
+# Factory: doubloon bonus by number of kinds produced (index = kinds)
 FACTORY_BONUS = (0, 0, 1, 2, 3, 5)
 
 
@@ -89,15 +88,15 @@ class BuildingInfo(NamedTuple):
     name: str
     cost: int
     vp: int
-    column: int  # coluna 1-4; também é o desconto máximo por pedreiras
-    slots: int  # círculos para colonos
+    column: int  # column 1-4; also the maximum quarry discount
+    slots: int  # colonist circles
     copies: int
-    size: int  # espaços ocupados na cidade
-    produces: int  # Good produzido, ou -1 para prédios violeta
-    large_production: bool  # conta 2 PV no Guild Hall
+    size: int  # city spaces used
+    produces: int  # Good produced, or -1 for violet buildings
+    large_production: bool  # worth 2 VP for the Guild Hall
 
 
-_V = -1  # violeta
+_V = -1  # violet
 BUILDINGS: tuple[BuildingInfo, ...] = (
     BuildingInfo("Small Indigo Plant", 1, 1, 1, 1, 4, 1, Good.INDIGO, False),
     BuildingInfo("Small Sugar Mill", 2, 1, 1, 1, 4, 1, Good.SUGAR, False),
@@ -130,7 +129,7 @@ BUILDING_SLOTS = tuple(b.slots for b in BUILDINGS)
 BUILDING_SIZE = tuple(b.size for b in BUILDINGS)
 PRODUCTION_BUILDINGS = tuple(i for i, b in enumerate(BUILDINGS) if b.produces >= 0)
 VIOLET_BUILDINGS = tuple(i for i, b in enumerate(BUILDINGS) if b.produces < 0)
-# prédios de produção por bem (milho não precisa de prédio)
+# production buildings per good (corn needs no building)
 PRODUCTION_BY_GOOD = tuple(
     tuple(i for i, b in enumerate(BUILDINGS) if b.produces == g) for g in range(NUM_GOODS)
 )
@@ -139,11 +138,11 @@ PRODUCTION_BY_GOOD = tuple(
 class SetupInfo(NamedTuple):
     money: int
     vp_chips: int
-    colonists: int  # na reserva, sem contar os do navio
+    colonists: int  # in the supply, not counting those on the ship
     ship_colonists: int
     cargo_ships: tuple[int, int, int]
     roles: tuple[Role, ...]
-    start_plantations: tuple[Good, ...]  # por assento, a partir do governador
+    start_plantations: tuple[Good, ...]  # per seat, starting with the governor
 
 
 _BASE_ROLES = (

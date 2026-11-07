@@ -1,8 +1,8 @@
-"""Registro de partidas em JSONL (uma partida por linha).
+"""Game records in JSONL (one game per line).
 
-Cada registro traz o resumo final de cada jogador (para análise rápida, sem
-reproduzir a partida) e, opcionalmente, a lista de ações (para reproduzir ou
-narrar a partida exatamente).
+Each record holds every player's final summary (for quick analysis without
+replaying) and, optionally, the action list (to replay or narrate the game
+exactly).
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ def player_summary(s: GameState, p: int) -> dict:
     bd = score_breakdown(s, p)
     return {
         "score": bd["total"],
-        "vp_chips": bd["fichas"],
-        "building_vp": bd["predios"],
+        "vp_chips": bd["chips"],
+        "building_vp": bd["buildings"],
         "bonus_vp": bd["bonus"],
         "money": s.money[p],
         "goods": sum(s.goods[p]),
@@ -67,7 +67,7 @@ def game_record(
 
 def record_actions(record: dict) -> list[Action]:
     if "actions" not in record:
-        raise ValueError("registro sem ações (gerado com --no-actions)")
+        raise ValueError("record has no actions (written with --no-actions)")
     return [Action.from_json(a) for a in record["actions"]]
 
 
@@ -86,7 +86,7 @@ def _ascii_strings(value: object) -> object:
 
 
 def dumps(record: dict) -> str:
-    """Uma linha JSON só com ASCII (sem acentos nem cedilha)."""
+    """One JSON line, ASCII only (no accented characters)."""
     return json.dumps(_ascii_strings(record), ensure_ascii=True, separators=(",", ":"))
 
 
@@ -102,4 +102,4 @@ def find_record(path: str | Path, game_index: int) -> dict:
     for record in read_records(path):
         if record["game"] == game_index:
             return record
-    raise KeyError(f"partida {game_index} não encontrada em {path}")
+    raise KeyError(f"game {game_index} not found in {path}")

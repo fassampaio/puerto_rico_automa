@@ -1,6 +1,6 @@
-"""Mede a velocidade do motor com agentes aleatórios.
+"""Measure engine speed with random agents.
 
-Uso: python scripts/bench.py [nº de partidas] [nº de jogadores]
+Usage: python scripts/bench.py [number of games] [number of players]
 """
 
 from __future__ import annotations
@@ -42,11 +42,11 @@ def main() -> None:
         s.clone()
         clones += 1
 
-    print(f"{games} partidas de {n} jogadores em {elapsed:.2f}s")
-    print(f"  {games / elapsed:,.0f} partidas/s · {decisions / elapsed:,.0f} decisões/s")
-    print(f"  {decisions / games:.0f} decisões por partida · {statistics.mean(rounds):.1f} rodadas")
-    print(f"  pontuação média (aleatório): {statistics.mean(scores):.1f}")
-    print(f"  clone(): {clones:,} por segundo")
+    print(f"{games} games with {n} players in {elapsed:.2f}s")
+    print(f"  {games / elapsed:,.0f} games/s | {decisions / elapsed:,.0f} decisions/s")
+    print(f"  {decisions / games:.0f} decisions per game | {statistics.mean(rounds):.1f} rounds")
+    print(f"  average score (random): {statistics.mean(scores):.1f}")
+    print(f"  clone(): {clones:,} per second")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Utilitários para montar situações específicas nos testes."""
+"""Helpers to set up specific situations in tests."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ def fresh(n: int = 4, seed: int = 0) -> GameState:
 
 
 def give_building(s: GameState, p: int, b: int, manned: int | None = None) -> None:
-    """Dá um prédio ao jogador; por padrão, totalmente ocupado (colonos da reserva)."""
+    """Give the player a building; fully manned by default (colonists from the supply)."""
     s.city[p][b] = 1
     s.building_supply[b] -= 1
     count = BUILDINGS[b].slots if manned is None else manned
@@ -21,7 +21,7 @@ def give_building(s: GameState, p: int, b: int, manned: int | None = None) -> No
 
 
 def set_island(s: GameState, p: int, tiles: list[int], manned: list[int] | None = None) -> None:
-    """Substitui a ilha do jogador (lista de 6 contagens: 5 plantações + pedreira)."""
+    """Replace the player's island (6 counts: 5 plantation types + quarry)."""
     assert len(tiles) == NUM_TILE_TYPES
     s.island[p] = list(tiles)
     s.island_manned[p] = list(manned) if manned is not None else [0] * NUM_TILE_TYPES
@@ -41,7 +41,7 @@ def choose(s: GameState, role: int) -> None:
 
 
 def finish_round(s: GameState) -> None:
-    """Joga a primeira opção válida até a rodada atual terminar."""
+    """Play the first legal option until the current round ends."""
     start = s.round
     while not s.is_terminal and s.round == start:
         step(s, legal_actions(s)[0])

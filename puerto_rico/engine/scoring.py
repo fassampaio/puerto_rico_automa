@@ -1,4 +1,4 @@
-"""Pontuação final e desempate."""
+"""Final scoring and tiebreak."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ def building_points(s: GameState, p: int) -> int:
 
 
 def bonus_points(s: GameState, p: int) -> int:
-    """Bônus dos prédios grandes (só contam se ocupados)."""
+    """Large building bonuses (only count if manned)."""
     row = s.city[p]
     pts = 0
     if s.is_manned(p, B.GUILD_HALL):
@@ -34,7 +34,7 @@ def bonus_points(s: GameState, p: int) -> int:
 
 def score_breakdown(s: GameState, p: int) -> dict[str, int]:
     chips, bld, bonus = s.vp[p], building_points(s, p), bonus_points(s, p)
-    return {"fichas": chips, "predios": bld, "bonus": bonus, "total": chips + bld + bonus}
+    return {"chips": chips, "buildings": bld, "bonus": bonus, "total": chips + bld + bonus}
 
 
 def score(s: GameState, p: int) -> int:
@@ -50,7 +50,7 @@ def tiebreak(s: GameState, p: int) -> int:
 
 
 def ranking(s: GameState) -> list[int]:
-    """Jogadores do primeiro ao último colocado."""
+    """Players from first to last place."""
     return sorted(
         range(s.num_players), key=lambda p: (score(s, p), tiebreak(s, p)), reverse=True
     )
